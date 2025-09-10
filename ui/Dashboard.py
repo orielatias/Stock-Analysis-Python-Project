@@ -1,6 +1,7 @@
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import subprocess, time
 import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -18,6 +19,29 @@ This is the Streamlist Frond-End. Allows for the following:
 engine = create_engine(DB_URL, future=True)
 
 st.title("Financial Risk Dashboard — v0 (read-only)")
+
+# Add sidebar refresh button
+st.sidebar.header("Data Controls")
+
+if st.sidebar.button("Refresh data (prices, news, risk)"):
+    with st.spinner("Refreshing data..."):
+        cmds = [
+            [sys.executable, "-m", "app.etl_prices"],
+            [sys.executable, "-m", "app.etl_news"],
+            [sys.executable, "-m", "app.risk_engine"],
+        ]
+        ok = True
+        for cmd in cmds:
+            try:
+                subprocess.check_call(cmd)
+                time.sleep(5)  # pause to respect API limits
+            except subprocess.CalledProcessError:
+                ok = False
+                st.error(f"Failed running: {' '.join(cmd)}")
+                break
+        if ok:
+            st.success("Data refreshed. Try selecting a stock again!")
+
 
 # Choose which stock’s time series to view
 stock = st.selectbox("Select a stock", STOCKS)
