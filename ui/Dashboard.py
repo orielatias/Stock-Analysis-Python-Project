@@ -4,8 +4,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import subprocess, time
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, inspect
 from app.settings import DB_URL, STOCKS
+from app.seed import init_db
 
 """
 This is the Streamlist Frond-End. Allows for the following:
@@ -17,6 +18,14 @@ This is the Streamlist Frond-End. Allows for the following:
 
 # Connect to your DB once for read-only queries
 engine = create_engine(DB_URL, future=True)
+
+init_db()
+
+insp = inspect(engine)
+must_have = ["prices", "news", "risk_scores"]
+if not all(insp.has_table(t) for t in must_have):
+    st.warning("Database initialized but tables are missing. Click **Refresh data** in the sidebar.")
+    st.stop()
 
 st.title("Financial Risk Dashboard — v0 (read-only)")
 
@@ -48,11 +57,16 @@ stock = st.selectbox("Select a stock", STOCKS)
 days = st.slider("Days to display", 30, 365, 120)
 
 # Plot the risk score line for 1 stock
-risk = pd.read_sql(
-    text("SELECT date, total_score, vol_20d, news_sent_7d "
-         "FROM risk_scores WHERE stock = :s ORDER BY date"),
-    engine, params={"s": stock}
-)
+risk = pd
+try:
+    risk = pd.read_sql(
+        text("SELECT date, total_score, vol_20d, news_sent_7d "
+             "FROM risk_scores WHERE stock = :s ORDER BY date"),
+        engine, params={"s": stock}
+    )
+except Exception:
+    st.warning("No data found yet. Click **Refresh data** in the sidebar to populate the database.")
+    st.stop()
 
 if risk.empty:
     st.warning("No risk scores yet. Make sure ETLs and risk_engine ran.")
