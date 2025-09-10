@@ -1,7 +1,6 @@
 # app/etl_prices.py
-import time
+import time, requests
 from datetime import datetime
-import requests
 import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -26,8 +25,7 @@ def fetch_prices_daily(stock: str) -> pd.DataFrame:
         "outputsize": "compact",
         "apikey": ALPHA
     }
-    r = requests.get(AV_URL, params=params, timeout=30)
-    r.raise_for_status() # Check for HTTPS status
+    r = get_with_backoff(AV_URL, params=params)
     j = r.json() # Converts response from json to python dict object
 
     # Handle common AV messages
@@ -113,6 +111,14 @@ def run_all(stocks=None):
         if i < len(stocks):
             time.sleep(12)
     print(f"Done. Inserted {total} total rows.")
+
+def get_with_backoff(url, params, retries=3, pause=20):
+    for i in range(retries):
+        r = requests.get(url, params=params, timeout=30)
+        if r.status_code == 200 and "Note" not in r.text:
+            return r
+        time.sleep(pause * (i+1))
+    raise RuntimeError("API unavailable or rate-limited")
 
 if __name__ == "__main__":
     run_all()
