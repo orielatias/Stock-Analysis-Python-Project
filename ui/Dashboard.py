@@ -6,8 +6,8 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine, text, inspect
 from app.settings import DB_URL, STOCKS
-from app.seed import init_db
-
+from app.db import Base
+from app.models import Price, News, RiskScore
 """
 This is the Streamlist Frond-End. Allows for the following:
     User to pick a stock
@@ -19,7 +19,7 @@ This is the Streamlist Frond-End. Allows for the following:
 # Connect to your DB once for read-only queries
 engine = create_engine(DB_URL, future=True)
 
-init_db()
+Base.metadata.create_all(bind=engine)
 
 insp = inspect(engine)
 must_have = ["prices", "news", "risk_scores"]
@@ -57,7 +57,6 @@ stock = st.selectbox("Select a stock", STOCKS)
 days = st.slider("Days to display", 30, 365, 120)
 
 # Plot the risk score line for 1 stock
-risk = pd
 try:
     risk = pd.read_sql(
         text("SELECT date, total_score, vol_20d, news_sent_7d "
