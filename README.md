@@ -1,2 +1,13 @@
-# Stock-Analysis-Python-Project
-“End-to-end financial risk analytics project: ETL pipelines fetch stock prices &amp; news, risk engine computes volatility + sentiment-based risk scores, and an interactive Streamlit dashboard visualizes insights.”
+Financial Risk Dashboard
+
+This project is an end-to-end financial risk analytics platform built with Python. It ingests live stock price data (Alpha Vantage API) and financial news (Marketaux API), computes rolling volatility and sentiment scores (using NLTK VADER), and stores everything in a SQL database. A custom risk engine combines these signals into daily risk scores, which are visualized in an interactive Streamlit dashboard.
+
+Key features:
+
+Automated ETL pipelines for prices and news
+
+Sentiment analysis on financial headlines
+
+Rolling volatility and z-score normalization for fair comparison
+
+Interactive charts and “Top Risk Movers” view for insights at a glance
