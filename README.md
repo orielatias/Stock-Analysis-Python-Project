@@ -13,5 +13,3 @@ Sentiment analysis on financial headlines
 Rolling volatility and z-score normalization for fair comparison
 
 Interactive charts and “Top Risk Movers” view for insights at a glance
-
-See a Live Demo here (Refresh Data to restart the data) : https://stock-analysis-python-project-fsqfcnqsb4ojqtsujzkyxy.streamlit.app/
